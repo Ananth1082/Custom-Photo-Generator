@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -18,10 +19,10 @@ import (
 	"github.com/gotd/td/tg"
 )
 
-var (
-	apiID   = 25776520                           // Replace with your API ID
-	apiHash = "72984406efccc60395fce3c0a6394989" // Replace with your API Hash
-)
+func init() {
+	// setEnv()
+}
+
 
 // Shared state to hold OTP and manage synchronization
 type OTPState struct {
@@ -31,9 +32,9 @@ type OTPState struct {
 }
 
 type ShareRequest struct {
-	Img         []string 
-	Contacts    []string 
-	PhoneNumber string   
+	Img         []string
+	Contacts    []string
+	PhoneNumber string
 }
 
 var otpState = &OTPState{}
@@ -147,6 +148,10 @@ func main() {
 
 func authenticateAndSend(sr ShareRequest) error {
 	ctx := context.Background()
+	var (
+		apiID,_ = strconv.Atoi(os.Getenv("API_ID"))
+		apiHash = os.Getenv("API_HASH")
+)
 	client := telegram.NewClient(apiID, apiHash, telegram.Options{})
 
 	err := client.Run(ctx, func(ctx context.Context) error {
