@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	apiID   = 25776520                           // Replace with your API ID
-	apiHash = "72984406efccc60395fce3c0a6394989" // Replace with your API Hash
+	apiID   =                            // Replace with your API ID
+	apiHash = "" // Replace with your API Hash
 )
 
 // Shared state to hold OTP and manage synchronization
