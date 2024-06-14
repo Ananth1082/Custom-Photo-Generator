@@ -17,12 +17,9 @@ import (
 	"github.com/gotd/td/telegram/auth"
 	"github.com/gotd/td/tg"
 )
-
-var (
-	apiID   =                            // Replace with your API ID
-	apiHash = "" // Replace with your API Hash
-)
-
+func init() {
+	// setEnv()
+}
 // Shared state to hold OTP and manage synchronization
 type OTPState struct {
 	sync.Mutex
@@ -147,6 +144,10 @@ func main() {
 
 func authenticateAndSend(sr ShareRequest) error {
 	ctx := context.Background()
+	var (
+		apiID,_ = strconv.Atoi(os.Getenv("API_ID"))
+		apiHash = os.Getenv("API_HASH")
+	)
 	client := telegram.NewClient(apiID, apiHash, telegram.Options{})
 
 	err := client.Run(ctx, func(ctx context.Context) error {
