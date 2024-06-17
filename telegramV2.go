@@ -20,7 +20,7 @@ import (
 )
 
 func init() {
-	setEnv()
+	// setEnv()
 }
 
 // Shared state to hold OTP and manage synchronization
