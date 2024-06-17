@@ -20,9 +20,8 @@ import (
 )
 
 func init() {
-	// setEnv()
+	setEnv()
 }
-
 
 // Shared state to hold OTP and manage synchronization
 type OTPState struct {
@@ -42,6 +41,7 @@ var otpState = &OTPState{}
 func main() {
 
 	r := gin.Default()
+
 	r.POST("/uploadImage", func(ctx *gin.Context) {
 		file, handler, err := ctx.Request.FormFile("image")
 		if err != nil {
@@ -143,15 +143,15 @@ func main() {
 	})
 
 	log.Println("Server started at :8080")
-	log.Fatal(r.Run(":8080"))
+	log.Fatal(r.Run())
 }
 
 func authenticateAndSend(sr ShareRequest) error {
 	ctx := context.Background()
 	var (
-		apiID,_ = strconv.Atoi(os.Getenv("API_ID"))
-		apiHash = os.Getenv("API_HASH")
-)
+		apiID, _ = strconv.Atoi(os.Getenv("API_ID"))
+		apiHash  = os.Getenv("API_HASH")
+	)
 	client := telegram.NewClient(apiID, apiHash, telegram.Options{})
 
 	err := client.Run(ctx, func(ctx context.Context) error {
