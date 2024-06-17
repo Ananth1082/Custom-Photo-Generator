@@ -20,7 +20,7 @@ import (
 )
 
 func init() {
-	// setEnv()
+	setEnv()
 }
 
 // Shared state to hold OTP and manage synchronization
@@ -31,7 +31,7 @@ type OTPState struct {
 }
 
 type ShareRequest struct {
-	Img         []string
+	Img         [][]byte
 	Contacts    []string
 	PhoneNumber string
 }
@@ -41,7 +41,7 @@ var otpState = &OTPState{}
 func main() {
 
 	r := gin.Default()
-
+	var sr ShareRequest
 	r.POST("/uploadImage", func(ctx *gin.Context) {
 		file, handler, err := ctx.Request.FormFile("image")
 		if err != nil {
@@ -84,16 +84,18 @@ func main() {
 		}
 
 		// Handle constant content
-		img, err = printConstContent(img, textData)
-		if err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("Failed to add constant content: %v", err))
-			return
-		}
+		// img, err = printConstContent(img, textData)
+		// if err != nil {
+		// 	ctx.String(http.StatusInternalServerError, fmt.Sprintf("Failed to add constant content: %v", err))
+		// 	return
+		// }
 		// Handle variable content
 		go func() {
-			if err := printVarContent(img, textData); err != nil {
+			sr.Img, err = printVarContent(img, textData)
+			if err != nil {
 				log.Printf("Failed to add variable content: %v", err)
 			}
+
 		}()
 
 		ctx.String(http.StatusOK, "Processing started successfully.")
@@ -101,7 +103,7 @@ func main() {
 
 	// Endpoint to initiate Telegram authentication
 	r.POST("/initAuth", func(c *gin.Context) {
-		var sr ShareRequest
+
 		if err := c.BindJSON(&sr); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -227,29 +229,24 @@ func importContacts(ctx context.Context, api *tg.Client, contacts []string) (*tg
 }
 
 // Upload a photo to Telegram and send it to specified users
-func uploadAndSendPhoto(ctx context.Context, api *tg.Client, imgPath string, recp tg.UserClass) error {
-	// Read the photo
-	photo, err := os.ReadFile(filepath.Join("./OUT", imgPath))
-	if err != nil {
-		return fmt.Errorf("failed to read image file: %w", err)
-	}
+func uploadAndSendPhoto(ctx context.Context, api *tg.Client, imgBytes []byte, recp tg.UserClass) error {
 
 	// Upload the photo in parts
 	fileID := rand.Int63()
 	partSize := 524288 // 512 KB per part
-	numParts := (len(photo) + partSize - 1) / partSize
+	numParts := (len(imgBytes) + partSize - 1) / partSize
 
 	for part := 0; part < numParts; part++ {
 		start := part * partSize
 		end := start + partSize
-		if end > len(photo) {
-			end = len(photo)
+		if end > len(imgBytes) {
+			end = len(imgBytes)
 		}
 
 		_, err := api.UploadSaveFilePart(ctx, &tg.UploadSaveFilePartRequest{
 			FileID:   fileID,
 			FilePart: part,
-			Bytes:    photo[start:end],
+			Bytes:    imgBytes[start:end],
 		})
 		if err != nil {
 			return fmt.Errorf("failed to upload file part: %w", err)
@@ -260,13 +257,13 @@ func uploadAndSendPhoto(ctx context.Context, api *tg.Client, imgPath string, rec
 	inputFile := &tg.InputFile{
 		ID:    fileID,
 		Parts: numParts,
-		Name:  filepath.Base(imgPath),
+		Name:  "send.png",
 	}
 
 	// Send the photo to each user
 
 	user := recp.(*tg.User)
-	_, err = api.MessagesSendMedia(ctx, &tg.MessagesSendMediaRequest{
+	_, err := api.MessagesSendMedia(ctx, &tg.MessagesSendMediaRequest{
 		Peer: &tg.InputPeerUser{
 			UserID:     user.ID,
 			AccessHash: user.AccessHash,
