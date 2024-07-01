@@ -211,8 +211,8 @@ func importContacts(ctx context.Context, api *tg.Client, contacts []string) (*tg
 		tgContacts[i] = tg.InputPhoneContact{
 			ClientID:  rand.Int63(),
 			Phone:     contact,
-			FirstName: "John", // Optional, can be replaced with actual name
-			LastName:  "Doe",  // Optional, can be replaced with actual surname
+			// FirstName: "John", // Optional, can be replaced with actual name
+			// LastName:  "Doe",  // Optional, can be replaced with actual surname
 		}
 	}
 
