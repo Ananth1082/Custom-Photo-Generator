@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
+	"image"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -20,7 +19,8 @@ import (
 )
 
 func init() {
-	// setEnv()
+	os.Setenv("API_HASH", "72984406efccc60395fce3c0a6394989")
+	os.Setenv("API_ID", "25776520")
 }
 
 // Shared state to hold OTP and manage synchronization
@@ -42,6 +42,8 @@ func main() {
 
 	r := gin.Default()
 	var sr ShareRequest
+	var baseImg image.Image
+	var err error
 	r.POST("/uploadImage", func(ctx *gin.Context) {
 		file, handler, err := ctx.Request.FormFile("image")
 		if err != nil {
@@ -49,22 +51,14 @@ func main() {
 			return
 		}
 		defer file.Close()
-
-		if err := os.MkdirAll("./uploads", os.ModePerm); err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("Failed to create uploads directory: %v", err))
-			return
-		}
-
-		dst, err := os.Create(filepath.Join("./uploads", handler.Filename))
+		baseImg, _, err = image.Decode(file)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("Failed to create file: %v", err))
-			return
+			log.Fatal("Image not obtained")
 		}
-		defer dst.Close()
 
-		if _, err := io.Copy(dst, file); err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("Failed to save file: %v", err))
-			return
+		if err != nil {
+			log.Fatal("Image received")
+			ctx.String(http.StatusInternalServerError, "Error uploading image")
 		}
 		ctx.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully.", handler.Filename))
 	})
@@ -77,12 +71,6 @@ func main() {
 			return
 		}
 
-		img, err := loadImage("./uploads/" + textData.MergedImage)
-		if err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("Failed to load image: %v", err))
-			return
-		}
-
 		// Handle constant content
 		// img, err = printConstContent(img, textData)
 		// if err != nil {
@@ -91,7 +79,7 @@ func main() {
 		// }
 		// Handle variable content
 		go func() {
-			sr.Img, err = printVarContent(img, textData)
+			sr.Img, err = printVarContent(baseImg, textData)
 			if err != nil {
 				log.Printf("Failed to add variable content: %v", err)
 			}
@@ -209,8 +197,8 @@ func importContacts(ctx context.Context, api *tg.Client, contacts []string) (*tg
 	tgContacts := make([]tg.InputPhoneContact, len(contacts))
 	for i, contact := range contacts {
 		tgContacts[i] = tg.InputPhoneContact{
-			ClientID:  rand.Int63(),
-			Phone:     contact,
+			ClientID: rand.Int63(),
+			Phone:    contact,
 			// FirstName: "John", // Optional, can be replaced with actual name
 			// LastName:  "Doe",  // Optional, can be replaced with actual surname
 		}

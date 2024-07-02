@@ -22,6 +22,7 @@ type ishareRequest struct {
 	MergedImage    string
 	ConstTextBoxes []ConstTextBox
 	VarTextBoxes   []VarTextBox
+	VarImageBoxes  []VarImageBox
 }
 
 type TextDetails struct {
@@ -36,6 +37,17 @@ type ConstTextBox struct {
 	MetaDetails  TextDetails
 	ConstContent string
 	Location     image.Point
+}
+type ImageDetails struct {
+	Scale struct {
+		XScale float32
+		YScale float32
+	}
+}
+type VarImageBox struct {
+	MetaDetails ImageDetails
+	Image       []image.Image
+	Location    image.Point
 }
 
 type VarTextBox struct {
@@ -204,10 +216,15 @@ func addLabel(img image.Image, td TextDetails, location image.Point, content str
 // 		}
 // 	}
 
-// 	log.Println("All variable images processed successfully.")
-// 	return imagesBytes, nil
-// }
-
+//		log.Println("All variable images processed successfully.")
+//		return imagesBytes, nil
+//	}
+func addImage(baseImg image.Image, img image.Image, location image.Point) image.Image {
+	canvas := image.NewRGBA(baseImg.Bounds())
+	draw.Draw(canvas, canvas.Bounds(), baseImg, image.Point{}, draw.Src)
+	draw.Draw(canvas, baseImg.Bounds(), img, location, draw.Over)
+	return canvas
+}
 func printVarContent(img image.Image, textData ishareRequest) ([][]byte, error) {
 	var imagesBytes [][]byte // To store the bytes of all generated images
 	if len(textData.VarTextBoxes) == 0 {
