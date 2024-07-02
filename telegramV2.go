@@ -30,9 +30,9 @@ type OTPState struct {
 }
 
 type ShareRequest struct {
-	Img         [][]byte
-	Contacts    []string
-	PhoneNumber string
+	varimg         [][]byte  
+	Contacts    []string `json:"contacts"`
+	PhoneNumber string `json:"phone"`
 }
 
 var otpState = &OTPState{}
@@ -78,7 +78,7 @@ func main() {
 		// }
 		// Handle variable content
 		go func() {
-			sr.Img, err = printVarContent(baseImg, textData)
+			sr.varimg, err = printVarContent(baseImg, textData)
 			if err != nil {
 				log.Printf("Failed to add variable content: %v", err)
 			}
