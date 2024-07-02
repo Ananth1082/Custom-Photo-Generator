@@ -174,7 +174,7 @@ func authenticateAndSend(sr ShareRequest) error {
 			return err
 		}
 		for i := 0; i < len(importResult.Users); i++ {
-			if err := uploadAndSendPhoto(ctx, api, sr.Img[i], importResult.Users[i]); err != nil {
+			if err := uploadAndSendPhoto(ctx, api, sr.varimg[i], importResult.Users[i]); err != nil {
 				return err
 			}
 		}
