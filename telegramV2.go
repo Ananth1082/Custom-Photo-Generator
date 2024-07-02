@@ -19,8 +19,7 @@ import (
 )
 
 func init() {
-	os.Setenv("API_HASH", "72984406efccc60395fce3c0a6394989")
-	os.Setenv("API_ID", "25776520")
+	// setENV()
 }
 
 // Shared state to hold OTP and manage synchronization
