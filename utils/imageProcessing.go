@@ -1,8 +1,7 @@
-package main
+package utils
 
 import (
 	models "CustomPhotoGenerator/m-v0/Models"
-	"CustomPhotoGenerator/m-v0/utils"
 	"fmt"
 	"image"
 	"log"
@@ -12,10 +11,10 @@ import (
 	_ "golang.org/x/image/font"
 )
 
-func printVarContent(img image.Image, textData models.IshareRequest) ([][]byte, error) {
+func PrintVarContent(img image.Image, textData models.IshareRequest) ([][]byte, error) {
 	var imagesBytes [][]byte // To store the bytes of all generated images
 	if len(textData.VarTextBoxes) == 0 {
-		imgBytes, err := utils.ImageToBytes(img)
+		imgBytes, err := ImageToBytes(img)
 		if err != nil {
 			return nil, err
 		}
@@ -37,21 +36,21 @@ func printVarContent(img image.Image, textData models.IshareRequest) ([][]byte, 
 			labeledImg := img
 			var err error
 			for _, tb := range textData.VarTextBoxes {
-				labeledImg, err = utils.AddLabel(labeledImg, tb.MetaDetails, tb.Location, tb.VarContent[i])
+				labeledImg, err = AddLabel(labeledImg, tb.MetaDetails, tb.Location, tb.VarContent[i])
 				if err != nil {
 					errors <- fmt.Errorf("error adding label: %w", err)
 					return
 				}
 			}
 			for _, itb := range textData.VarImageBoxes {
-				foregroundImage, err := utils.GetImage(itb.ImageLink[i])
-				foregroundImage = utils.FitImage(foregroundImage, itb.MetaDetails.Size.Height, itb.MetaDetails.Size.Width)
+				foregroundImage, err := GetImage(itb.ImageLink[i])
+				foregroundImage = FitImage(foregroundImage, itb.MetaDetails.Size.Height, itb.MetaDetails.Size.Width)
 				if err != nil {
 					log.Fatal("error getting image", err)
 				}
-				labeledImg = utils.AddImage(labeledImg, foregroundImage, itb.Location)
+				labeledImg = AddImage(labeledImg, foregroundImage, itb.Location)
 			}
-			imgBytes, err := utils.ImageToBytes(labeledImg)
+			imgBytes, err := ImageToBytes(labeledImg)
 			if err != nil {
 				errors <- fmt.Errorf("error saving image: %w", err)
 				return
