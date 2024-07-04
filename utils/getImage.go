@@ -6,6 +6,7 @@ import (
 )
 
 func GetImage(url string) (image.Image, error) {
+
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
