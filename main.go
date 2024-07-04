@@ -7,14 +7,12 @@ import (
 	"image"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	os.Setenv("API_HASH", "72984406efccc60395fce3c0a6394989")
-	os.Setenv("API_ID", "25776520")
+	env.SetENV()
 }
 
 func main() {
