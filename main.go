@@ -1,6 +1,7 @@
 package main
 
 import (
+	env "CustomPhotoGenerator/m-v0/ENV"
 	models "CustomPhotoGenerator/m-v0/Models"
 	telegramclient "CustomPhotoGenerator/m-v0/TelegramClient"
 	"fmt"
