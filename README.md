@@ -1,7 +1,7 @@
-## Setup
+# Setup
 
-  To work on the project locally
-    1) Clone the project.
-    2) Download all the dependencies.
-    3) Add an ENV variable for Telegram client API ID and Hash.
-    4) `go run .` to run the program. 
+  To work on the project locally\n
+    1) Clone the project.\n
+    2) Download all the dependencies.\n
+    3) Add an ENV variable for Telegram client API ID and Hash.\n
+    4) `go run .` to run the program.\n
