@@ -1,4 +1,4 @@
-module psdfile/m-v0
+module CustomPhotoGenerator/m-v0
 
 go 1.22.3
 
