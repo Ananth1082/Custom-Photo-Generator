@@ -17,7 +17,7 @@ var Err error
 func Server() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*", "http://localhost:5173"}, // Add allowed origins
+		AllowOrigins:     []string{"*", "http://localhost:5173", "http://172.16.25.167:5173"}, // Add allowed origins
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true, // Set to true if you need to include credentials
