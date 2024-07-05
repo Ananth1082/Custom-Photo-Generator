@@ -4,8 +4,9 @@ import (
 	models "CustomPhotoGenerator/m-v0/Models"
 	"image"
 	"log"
-	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,19 +16,13 @@ var Err error
 
 func Server() {
 	router := gin.Default()
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight requests
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusOK)
-			return
-		}
-
-		c.Next()
-	})
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://172.16.25.167:5173", "*"}, // Add allowed origins
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true, // Set to true if you need to include credentials
+		MaxAge:           12 * time.Hour,
+	}))
 	Routes(router)
 	log.Println("Server started at :8080")
 	log.Fatal(router.Run())
