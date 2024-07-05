@@ -56,7 +56,13 @@ func AuthenticateAndSend(sr models.ShareRequest) error {
 			return err
 		}
 		for i := 0; i < len(importResult.Users); i++ {
-			if err := UploadAndSendPhoto(ctx, api, sr.Varimg[i], importResult.Users[i]); err != nil {
+			n := len(sr.Varimg)
+			if i >= n {
+				err := UploadAndSendPhoto(ctx, api, sr.Varimg[n-1], importResult.Users[i])
+				if err != nil {
+					return err
+				}
+			} else if err := UploadAndSendPhoto(ctx, api, sr.Varimg[i], importResult.Users[i]); err != nil {
 				return err
 			}
 		}

@@ -13,7 +13,7 @@ import (
 
 func PrintVarContent(img image.Image, textData models.IshareRequest) ([][]byte, error) {
 	var imagesBytes [][]byte // To store the bytes of all generated images
-	if len(textData.VarTextBoxes) == 0 {
+	if len(textData.VarTextBoxes) == 0 && len(textData.VarImageBoxes) == 0 {
 		imgBytes, err := ImageToBytes(img)
 		if err != nil {
 			return nil, err

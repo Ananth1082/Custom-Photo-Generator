@@ -34,6 +34,7 @@ func sendTextboxesController(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, fmt.Sprintf("Invalid request data: %v", err))
 		return
 	}
+	log.Println(Sr)
 	Sr.Varimg, Err = utils.PrintVarContent(BaseImg, textData)
 	if Err != nil {
 		log.Printf("Failed to add variable content: %v", Err)
