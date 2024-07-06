@@ -6,6 +6,8 @@ import (
 
 func Routes(r *gin.Engine) {
 	r.GET("/ping", func(ctx *gin.Context) {
+		ctx.Header("Access-Control-Allow-Origin", ctx.GetHeader("Origin"))
+		ctx.Header("Access-Control-Allow-Credentials", "true")
 		ctx.String(200, "Pong")
 	})
 	//Endpoint to upload images to be shared
