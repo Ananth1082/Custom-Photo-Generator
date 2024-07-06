@@ -23,6 +23,13 @@ func Server() {
 		AllowCredentials: true, // Set to true if you need to include credentials
 		MaxAge:           12 * time.Hour,
 	}))
+	router.OPTIONS("/*cors", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.JSON(204, nil)
+	})
+
 	Routes(router)
 	log.Println("Server started at :8080")
 	log.Fatal(router.Run())
