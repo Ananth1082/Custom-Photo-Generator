@@ -17,11 +17,10 @@ var Err error
 func Server() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*", "http://localhost:5173", "http://172.16.25.167:5173", "https://test2-liart-seven.vercel.app/"}, // Add allowed origins
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		AllowCredentials: true, // Set to true if you need to include credentials
-		MaxAge:           12 * time.Hour,
+		AllowOrigins: []string{"*", "http://localhost:5173", "http://172.16.25.167:5173", "https://test2-liart-seven.vercel.app/"}, // Add allowed origins
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		MaxAge:       12 * time.Hour,
 	}))
 	router.OPTIONS("/*cors", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
