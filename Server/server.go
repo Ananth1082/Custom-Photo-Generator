@@ -19,7 +19,7 @@ func Server() {
 
 	// CORS configuration
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://172.16.25.167:5173", "https://test2-liart-seven.vercel.app"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://172.16.25.167:5173", "https://test2-liart-seven.vercel.app", "https://vite-project-psi-ivory.vercel.app"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true, // Allow credentials
