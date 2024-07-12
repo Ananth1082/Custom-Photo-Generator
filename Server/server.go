@@ -36,8 +36,7 @@ func Server() {
 
 	// CORS configuration
 	config := cors.Config{
-		AllowAllOrigins: true,
-
+		AllowOrigins:     []string{"https://test2-nine-omega.vercel.app"},
 		AllowMethods:     []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "Access-Control-Allow-Origin"},
 		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
