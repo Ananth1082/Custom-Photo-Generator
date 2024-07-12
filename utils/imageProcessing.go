@@ -12,21 +12,20 @@ import (
 )
 
 func PrintVarContent(img image.Image, textData models.IshareRequest) ([][]byte, error) {
-	var imagesBytes [][]byte // To store the bytes of all generated images
+	noOfDetails := len(textData.VarTextBoxes[0].VarContent)
+	imagesBytes := make([][]byte, noOfDetails) // Initialize slice with fixed length
+
 	if len(textData.VarTextBoxes) == 0 && len(textData.VarImageBoxes) == 0 {
 		imgBytes, err := ImageToBytes(img)
 		if err != nil {
 			return nil, err
 		}
-		imagesBytes = append(imagesBytes, imgBytes)
+		imagesBytes[0] = imgBytes // Place the single image at index 0
 		return imagesBytes, nil
 	}
 
-	var mu sync.Mutex                                                         // To safely append to imagesBytes
-	errors := make(chan error, len(textData.VarTextBoxes[0].VarContent))      // Channel for errors
-	imagesChan := make(chan []byte, len(textData.VarTextBoxes[0].VarContent)) // Channel for image bytes
-
-	// Number of workers
+	var mu sync.Mutex                       // Mutex to protect access to imagesBytes
+	errors := make(chan error, noOfDetails) // Channel to collect errors
 	numWorkers := 10
 	var wg sync.WaitGroup
 
@@ -43,11 +42,14 @@ func PrintVarContent(img image.Image, textData models.IshareRequest) ([][]byte, 
 				}
 			}
 			for _, itb := range textData.VarImageBoxes {
+				log.Println("Gimme the image...")
 				foregroundImage, err := GetImage(itb.ImageLink[i])
-				foregroundImage = FitImage(foregroundImage, itb.MetaDetails.Size.Height, itb.MetaDetails.Size.Width)
+				log.Println("Got the image...")
 				if err != nil {
-					log.Fatal("error getting image", err)
+					errors <- fmt.Errorf("error getting image: %w", err)
+					return
 				}
+				foregroundImage = FitImage(foregroundImage, itb.MetaDetails.Size.Height, itb.MetaDetails.Size.Width)
 				labeledImg = AddImage(labeledImg, foregroundImage, itb.Location)
 			}
 			imgBytes, err := ImageToBytes(labeledImg)
@@ -56,14 +58,14 @@ func PrintVarContent(img image.Image, textData models.IshareRequest) ([][]byte, 
 				return
 			}
 			mu.Lock()
-			imagesBytes = append(imagesBytes, imgBytes)
+			imagesBytes[i] = imgBytes // Store image bytes at the correct index
 			mu.Unlock()
 		}
 		wg.Done()
 	}
 
 	// Create a channel to send jobs to workers
-	jobs := make(chan int, len(textData.VarTextBoxes[0].VarContent))
+	jobs := make(chan int, noOfDetails)
 
 	// Start workers
 	for w := 0; w < numWorkers; w++ {
@@ -72,14 +74,13 @@ func PrintVarContent(img image.Image, textData models.IshareRequest) ([][]byte, 
 	}
 
 	// Send jobs to workers
-	for i := 0; i < len(textData.VarTextBoxes[0].VarContent); i++ {
+	for i := 0; i < noOfDetails; i++ {
 		jobs <- i
 	}
 	close(jobs)
 
 	// Wait for all workers to complete
 	wg.Wait()
-	close(imagesChan)
 	close(errors)
 
 	// Collect any errors

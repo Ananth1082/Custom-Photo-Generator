@@ -63,6 +63,8 @@ func FitImage(img image.Image, newHeight, newWidth int) image.Image {
 	// Create a new blank image with the new dimensions
 	dstImage := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 	// Resize the image using BiLinear interpolation
+	log.Println("Started....")
 	scaleDraw.BiLinear.Scale(dstImage, dstImage.Bounds(), img, img.Bounds(), draw.Over, nil)
+	log.Println("Ended.....")
 	return dstImage
 }
