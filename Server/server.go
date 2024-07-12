@@ -4,6 +4,7 @@ import (
 	models "CustomPhotoGenerator/m-v0/Models"
 	"image"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -13,6 +14,22 @@ import (
 var Sr models.ShareRequest
 var BaseImg image.Image
 var Err error
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Authorization, Access-Control-Allow-Headers, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
+}
 
 func Server() {
 	router := gin.Default()
@@ -29,6 +46,7 @@ func Server() {
 	}
 
 	router.Use(cors.New(config))
+	router.Use(CORSMiddleware())
 	// Define your routes
 	Routes(router)
 
