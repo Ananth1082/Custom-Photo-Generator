@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image"
 	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"net/http"
 	"sync"
@@ -25,6 +26,7 @@ func newserver() *WebsocketServer {
 }
 
 func (s *WebsocketServer) handleWS(w http.ResponseWriter, r *http.Request) {
+
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -34,9 +36,9 @@ func (s *WebsocketServer) handleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println("Incoming request from:", conn.RemoteAddr())
-
-	s.procedure(conn)
-
+	var wg sync.WaitGroup
+	s.procedure(conn, &wg)
+	wg.Wait()
 	s.lock.Lock()
 	s.conns[conn] = true
 	s.lock.Unlock()
@@ -50,7 +52,7 @@ func (s *WebsocketServer) handleWS(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *WebsocketServer) procedure(conn *websocket.Conn) {
+func (s *WebsocketServer) procedure(conn *websocket.Conn, wg *sync.WaitGroup) {
 	otpState := &models.OTPState{ // Initialize otpState
 		WaitGroup: &sync.WaitGroup{},
 	}
@@ -63,20 +65,23 @@ func (s *WebsocketServer) procedure(conn *websocket.Conn) {
 	}
 	cd := s.readContactDetails(conn)
 	otpState.WaitGroup.Add(1)
+	wg.Add(1)
 	go func() {
 		log.Println("Starting authentication and message sending process.")
 		err := telegramclient.AuthenticateAndSend(cd, varImgs, otpState)
 		if err != nil {
 			log.Println("Error during authentication and sending message:", err)
+			conn.WriteMessage(websocket.TextMessage, []byte("Error sending images"))
 		}
+		conn.WriteMessage(websocket.TextMessage, []byte("Successfully sent the images"))
+		wg.Done()
 	}()
-
+	conn.WriteMessage(websocket.TextMessage, []byte("Please send otp"))
 	otp := s.readOTP(conn)
 	otpState.Lock()
 	otpState.Otp = otp
 	otpState.Unlock()
 	otpState.WaitGroup.Done()
-	log.Println("OTP received and handled.")
 }
 
 func (s *WebsocketServer) readPhoto(conn *websocket.Conn) image.Image {
