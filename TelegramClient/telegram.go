@@ -15,9 +15,7 @@ import (
 	"github.com/gotd/td/tg"
 )
 
-var OtpState = &models.OTPState{}
-
-func AuthenticateAndSend(sr models.ShareRequest) error {
+func AuthenticateAndSend(cd models.ContactDetails, varImgs [][]byte, otpState *models.OTPState) error {
 	ctx := context.Background()
 	var (
 		apiID, _ = strconv.Atoi(os.Getenv("API_ID"))
@@ -30,16 +28,16 @@ func AuthenticateAndSend(sr models.ShareRequest) error {
 		codePrompt := func(ctx context.Context, sentCode *tg.AuthSentCode) (string, error) {
 			// Here we simulate waiting for OTP from client
 			log.Println("Waiting for OTP from client...")
-			OtpState.WaitGroup.Wait() // Block until OTP is received
+			otpState.WaitGroup.Wait() // Block until OTP is received
 
-			OtpState.Lock()
-			defer OtpState.Unlock()
-			return strings.TrimSpace(OtpState.Otp), nil
+			otpState.Lock()
+			defer otpState.Unlock()
+			return strings.TrimSpace(otpState.Otp), nil
 		}
 
 		// Create and run the authentication flow
 		flow := auth.NewFlow(
-			auth.CodeOnly(sr.PhoneNumber, auth.CodeAuthenticatorFunc(codePrompt)),
+			auth.CodeOnly(cd.Phone, auth.CodeAuthenticatorFunc(codePrompt)),
 			auth.SendCodeOptions{AllowFlashCall: true, CurrentNumber: true},
 		)
 
@@ -51,18 +49,18 @@ func AuthenticateAndSend(sr models.ShareRequest) error {
 		api := tg.NewClient(client)
 
 		// Import contacts
-		importResult, err := ImportContacts(ctx, api, sr.Contacts)
+		importResult, err := ImportContacts(ctx, api, cd.Contacts)
 		if err != nil {
 			return err
 		}
 		for i := 0; i < len(importResult.Users); i++ {
-			n := len(sr.Varimg)
+			n := len(varImgs)
 			if i >= n {
-				err := UploadAndSendPhoto(ctx, api, sr.Varimg[n-1], importResult.Users[i])
+				err := UploadAndSendPhoto(ctx, api, varImgs[n-1], importResult.Users[i])
 				if err != nil {
 					return err
 				}
-			} else if err := UploadAndSendPhoto(ctx, api, sr.Varimg[i], importResult.Users[i]); err != nil {
+			} else if err := UploadAndSendPhoto(ctx, api, varImgs[i], importResult.Users[i]); err != nil {
 				return err
 			}
 		}
